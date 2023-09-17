@@ -37,6 +37,9 @@ public class Game1 : Game
         // TODO: Add your initialization logic here
         Window.AllowUserResizing = true;
         Window.TextInput += TextInputHandler;
+        _graphics.PreferredBackBufferHeight = 1080;
+        _graphics.PreferredBackBufferWidth = 1920;
+        _graphics.ApplyChanges();
 
         m_LoopLength = -1;
 
@@ -64,6 +67,10 @@ public class Game1 : Game
         switch(m_State)
         {
             case GameStates.PreGame:
+                if(Keyboard.GetState().IsKeyDown(Keys.C))
+                {
+                    m_TextBox.Clear();
+                }
                 if(Keyboard.GetState().IsKeyDown(Keys.Add))
                 {
                     m_TextBox.Clear();
@@ -105,6 +112,22 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         _spriteBatch.Begin();
+
+        switch(m_State)
+        {
+            case GameStates.PreGame:
+                break;
+            case GameStates.EnteringPlayer:
+                _spriteBatch.DrawString(m_StandardBoldFont, m_TextBox, new Vector2(100, 500), Color.Black);
+                break;
+            case GameStates.Playing:
+                break;
+            case GameStates.EndGame:
+                break;
+            default:
+                break;
+        }
+
         _spriteBatch.DrawString(m_StandardBoldFont, "State: " + m_State, new Vector2(100, 100), Color.Black);
         _spriteBatch.DrawString(m_StandardBoldFont, "Players: ", new Vector2(100, 300), Color.Black);
         if(m_Players.Count > 0)
