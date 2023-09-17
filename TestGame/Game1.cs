@@ -24,6 +24,8 @@ public class Game1 : Game
     private GameStates m_State = GameStates.PreGame;
     private string[] testString = {"Marcus", "Mona"};
     private int m_LoopLength;
+    private int m_DeviceResY;
+    private int m_DeviceResX;
 
     public Game1()
     {
@@ -37,8 +39,14 @@ public class Game1 : Game
         // TODO: Add your initialization logic here
         Window.AllowUserResizing = true;
         Window.TextInput += TextInputHandler;
-        _graphics.PreferredBackBufferHeight = 1080;
-        _graphics.PreferredBackBufferWidth = 1920;
+        Window.Position = new Point(0,0);
+        //SDL_Maximize
+        m_DeviceResX = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+        m_DeviceResY = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+        //_graphics.HardwareModeSwitch = false;
+        //_graphics.IsFullScreen = true;
+        //_graphics.PreferredBackBufferWidth = m_DeviceResX;
+        //_graphics.PreferredBackBufferHeight = m_DeviceResY;
         _graphics.ApplyChanges();
 
         m_LoopLength = -1;
@@ -116,6 +124,8 @@ public class Game1 : Game
         switch(m_State)
         {
             case GameStates.PreGame:
+                _spriteBatch.DrawString(m_StandardBoldFont, "X res: " + m_DeviceResX.ToString(), new Vector2(500, 300), Color.Black);
+                _spriteBatch.DrawString(m_StandardBoldFont, "Y res: " + m_DeviceResY.ToString(), new Vector2(500, 500), Color.Black);
                 break;
             case GameStates.EnteringPlayer:
                 _spriteBatch.DrawString(m_StandardBoldFont, m_TextBox, new Vector2(100, 500), Color.Black);
