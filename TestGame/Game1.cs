@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Runtime.InteropServices;
 
 namespace TestGame;
 
@@ -27,6 +28,11 @@ public class Game1 : Game
     private int m_DeviceResY;
     private int m_DeviceResX;
 
+    private const string SDL = "SDL2.dll";
+
+    [DllImport(SDL, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void SDL_MaximizeWindow(IntPtr window);
+
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -39,14 +45,14 @@ public class Game1 : Game
         // TODO: Add your initialization logic here
         Window.AllowUserResizing = true;
         Window.TextInput += TextInputHandler;
-        Window.Position = new Point(0,0);
-        //SDL_Maximize
         m_DeviceResX = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
         m_DeviceResY = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
         //_graphics.HardwareModeSwitch = false;
         //_graphics.IsFullScreen = true;
-        //_graphics.PreferredBackBufferWidth = m_DeviceResX;
-        //_graphics.PreferredBackBufferHeight = m_DeviceResY;
+        _graphics.PreferredBackBufferWidth = m_DeviceResX;
+        _graphics.PreferredBackBufferHeight = m_DeviceResY;
+        Window.Position = new Point(0,0);
+        SDL_MaximizeWindow(Window.Handle);
         _graphics.ApplyChanges();
 
         m_LoopLength = -1;
@@ -168,5 +174,10 @@ public class Game1 : Game
         var character = args.Character;
 
         m_TextBox.Append(character);
+    }
+
+    private void MaximizeWindow()
+    {
+        SDL_MaximizeWindow(Window.Handle);
     }
 }
