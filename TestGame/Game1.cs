@@ -110,6 +110,10 @@ public class Game1 : Game
                     m_EnterPressed = true;
                     m_State = GameStates.PreGame;
                 }
+                if(Keyboard.GetState().IsKeyDown(Keys.Multiply))
+                {
+                    ;
+                }
                 break;
             case GameStates.Playing:
                 break;
@@ -142,8 +146,10 @@ public class Game1 : Game
             case GameStates.EnteringPlayer:
                 _spriteBatch.DrawString(m_StandardBoldFont, "Enter player name: ", new Vector2((m_DeviceResX / 2) - (15 * 15 + 10 * 3), (m_DeviceResY / 2)), Color.Black);
                 _spriteBatch.DrawString(m_StandardBoldFont, m_TextBox, new Vector2((m_DeviceResX / 2), (m_DeviceResY / 2)), Color.Black);
+                _spriteBatch.DrawString(m_StandardBoldFont, m_TextBox.Length.ToString(), new Vector2((m_DeviceResX / 2), (m_DeviceResY / 2) + 40), Color.Black);
                 break;
             case GameStates.Playing:
+                _spriteBatch.Draw(whiteRectangle, new Rectangle(500, 20, 80, 30), Color.Black);
                 break;
             case GameStates.EndGame:
                 break;
@@ -174,7 +180,19 @@ public class Game1 : Game
         var pressedKey = args.Key;
         var character = args.Character;
 
-        m_TextBox.Append(character);
+
+        if(character == (char)Keys.Back)
+        {
+            var index = m_TextBox.Length - 1;
+            if(index >= 0)
+            {
+                m_TextBox.Remove(index, 1);
+            }
+        }
+        else
+        {
+            m_TextBox.Append(character);
+        }
     }
 
     private void MaximizeWindow()
