@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace TestGame;
 
@@ -22,7 +23,7 @@ public class Game1 : Game
     private List<string> m_Players = new List<string>();
     private bool m_EnterPressed;
     private bool m_AddPressed;
-    private GameStates m_State = GameStates.PreGame;
+    private GameStates m_State = GameStates.Init;
     private string[] testString = {"Marcus", "Mona"};
     private int m_LoopLength;
     private int m_DeviceResY;
@@ -42,20 +43,18 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
         Window.AllowUserResizing = true;
         Window.TextInput += TextInputHandler;
         m_DeviceResX = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
         m_DeviceResY = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-        //_graphics.HardwareModeSwitch = false;
-        //_graphics.IsFullScreen = true;
         _graphics.PreferredBackBufferWidth = m_DeviceResX;
         _graphics.PreferredBackBufferHeight = m_DeviceResY;
         Window.Position = new Point(0,0);
         SDL_MaximizeWindow(Window.Handle);
         _graphics.ApplyChanges();
 
-        m_LoopLength = -1;
+        // TODO - not needed for now
+        //m_LoopLength = -1;
 
         base.Initialize();
     }
@@ -67,8 +66,6 @@ public class Game1 : Game
         whiteRectangle.SetData(new[] { Color.White} );
         m_StandardFont = Content.Load<SpriteFont>("standardFont");
         m_StandardBoldFont = Content.Load<SpriteFont>("standardBoldFont");
-
-        // TODO: use this.Content to load your game content here
     }
 
     protected override void Update(GameTime gameTime)
@@ -80,6 +77,12 @@ public class Game1 : Game
 
         switch(m_State)
         {
+            case GameStates.Init:
+                if(Keyboard.GetState().IsKeyDown(Keys.Space))
+                {
+                    m_State = GameStates.PreGame;
+                }
+                break;
             case GameStates.PreGame:
                 if(Keyboard.GetState().IsKeyDown(Keys.C))
                 {
@@ -116,8 +119,6 @@ public class Game1 : Game
                 break;
         }
 
-        // TODO: Add your update logic here
-
         base.Update(gameTime);
     }
 
@@ -127,14 +128,20 @@ public class Game1 : Game
 
         _spriteBatch.Begin();
 
+        _spriteBatch.DrawString(m_StandardBoldFont, "State: " + m_State, new Vector2(20, 10), Color.Black);
+        _spriteBatch.DrawString(m_StandardBoldFont, "X res: " + m_DeviceResX.ToString(), new Vector2(20, 40), Color.Black);
+        _spriteBatch.DrawString(m_StandardBoldFont, "Y res: " + m_DeviceResY.ToString(), new Vector2(20, 70), Color.Black);
+        _spriteBatch.DrawString(m_StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
+
         switch(m_State)
         {
+            case GameStates.Init:
+                break;
             case GameStates.PreGame:
-                _spriteBatch.DrawString(m_StandardBoldFont, "X res: " + m_DeviceResX.ToString(), new Vector2(500, 300), Color.Black);
-                _spriteBatch.DrawString(m_StandardBoldFont, "Y res: " + m_DeviceResY.ToString(), new Vector2(500, 500), Color.Black);
                 break;
             case GameStates.EnteringPlayer:
-                _spriteBatch.DrawString(m_StandardBoldFont, m_TextBox, new Vector2(100, 500), Color.Black);
+                _spriteBatch.DrawString(m_StandardBoldFont, "Enter player name: ", new Vector2((m_DeviceResX / 2) - (15 * 15 + 10 * 3), (m_DeviceResY / 2)), Color.Black);
+                _spriteBatch.DrawString(m_StandardBoldFont, m_TextBox, new Vector2((m_DeviceResX / 2), (m_DeviceResY / 2)), Color.Black);
                 break;
             case GameStates.Playing:
                 break;
@@ -144,21 +151,15 @@ public class Game1 : Game
                 break;
         }
 
-        _spriteBatch.DrawString(m_StandardBoldFont, "State: " + m_State, new Vector2(100, 100), Color.Black);
-        _spriteBatch.DrawString(m_StandardBoldFont, "Players: ", new Vector2(100, 300), Color.Black);
         if(m_Players.Count > 0)
         {
-            _spriteBatch.DrawString(m_StandardBoldFont, m_Players[m_LoopLength], new Vector2(230, 300), Color.Black);
+            _spriteBatch.DrawString(m_StandardBoldFont, string.Join(", ", m_Players), new Vector2(140, 100), Color.Black);
         }
-
-         //_spriteBatch.DrawString(m_StandardBoldFont, "Players:", new Vector2(100, 300), Color.Black);
 
         // Example: Draw a rectangle
         //_spriteBatch.Draw(whiteRectangle, new Rectangle(500, 20, 80, 30), Color.Black);
         
         _spriteBatch.End();
-
-        // TODO: Add your drawing code here
 
         base.Draw(gameTime);
     }
