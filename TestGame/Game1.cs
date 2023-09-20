@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Runtime.InteropServices;
 using System.Linq;
+using MonoGame.Extended;
 
 namespace TestGame;
 
@@ -15,19 +16,19 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
 
-    StringBuilder m_TextBox = new StringBuilder();
-    Texture2D whiteRectangle;
+    private SpriteFont StandardFont;
+    private SpriteFont StandardBoldFont;
 
-    private SpriteFont m_StandardFont;
-    private SpriteFont m_StandardBoldFont;
-    private List<string> m_Players = new List<string>();
-    private bool m_EnterPressed;
-    private bool m_AddPressed;
-    private GameStates m_State = GameStates.Init;
-    private string[] testString = {"Marcus", "Mona"};
-    private int m_LoopLength;
-    private int m_DeviceResY;
-    private int m_DeviceResX;
+    private StringBuilder m_TextBox = new StringBuilder();
+    private Texture2D pixel;
+
+    private List<string> AllPlayers = new List<string>();
+    private GameStates State = GameStates.Init;
+    private int DeviceResY;
+    private int DeviceResX;
+
+    private List<Player> playerObjectList = new List<Player>();
+    private Player[] playerObjectArray = new Player[20];
 
     private const string SDL = "SDL2.dll";
 
@@ -45,16 +46,13 @@ public class Game1 : Game
     {
         Window.AllowUserResizing = true;
         Window.TextInput += TextInputHandler;
-        m_DeviceResX = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-        m_DeviceResY = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-        _graphics.PreferredBackBufferWidth = m_DeviceResX;
-        _graphics.PreferredBackBufferHeight = m_DeviceResY;
+        DeviceResY = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+        DeviceResX = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+        _graphics.PreferredBackBufferWidth = DeviceResX;
+        _graphics.PreferredBackBufferHeight = DeviceResY;
         Window.Position = new Point(0,0);
         SDL_MaximizeWindow(Window.Handle);
         _graphics.ApplyChanges();
-
-        // TODO - not needed for now
-        //m_LoopLength = -1;
 
         base.Initialize();
     }
@@ -62,10 +60,10 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-        whiteRectangle = new Texture2D(GraphicsDevice, 1, 1);
-        whiteRectangle.SetData(new[] { Color.White} );
-        m_StandardFont = Content.Load<SpriteFont>("standardFont");
-        m_StandardBoldFont = Content.Load<SpriteFont>("standardBoldFont");
+        pixel = new Texture2D(GraphicsDevice, 1, 1);
+        pixel.SetData(new[] { Color.White} );
+        StandardFont = Content.Load<SpriteFont>("standardFont");
+        StandardBoldFont = Content.Load<SpriteFont>("standardBoldFont");
     }
 
     protected override void Update(GameTime gameTime)
@@ -75,12 +73,12 @@ public class Game1 : Game
             Exit();
         }
 
-        switch(m_State)
+        switch(State)
         {
             case GameStates.Init:
                 if(Keyboard.GetState().IsKeyDown(Keys.Space))
                 {
-                    m_State = GameStates.PreGame;
+                    State = GameStates.PreGame;
                 }
                 break;
             case GameStates.PreGame:
@@ -91,12 +89,16 @@ public class Game1 : Game
                 if(Keyboard.GetState().IsKeyDown(Keys.Add))
                 {
                     m_TextBox.Clear();
-                    m_AddPressed = true;
-                    m_State = GameStates.EnteringPlayer;
+                    State = GameStates.EnteringPlayer;
                 }
                 if(Keyboard.GetState().IsKeyDown(Keys.P))
-                {
-                    m_State = GameStates.Playing;
+                {                    
+                    for(int i = 0; i < AllPlayers.Count; i++)
+                    {
+                        playerObjectArray[i] = new Player(AllPlayers[i], Color.Crimson, PlayingMode.Standard);
+                    }
+
+                    State = GameStates.Playing;
                 }
                 break;
             case GameStates.EnteringPlayer:
@@ -104,11 +106,9 @@ public class Game1 : Game
                 {
                     if(m_TextBox.ToString() != "")
                     {
-                        m_LoopLength++;
                         AddPlayer(m_TextBox.ToString());
                     }
-                    m_EnterPressed = true;
-                    m_State = GameStates.PreGame;
+                    State = GameStates.PreGame;
                 }
                 if(Keyboard.GetState().IsKeyDown(Keys.Multiply))
                 {
@@ -132,24 +132,36 @@ public class Game1 : Game
 
         _spriteBatch.Begin();
 
-        _spriteBatch.DrawString(m_StandardBoldFont, "State: " + m_State, new Vector2(20, 10), Color.Black);
-        _spriteBatch.DrawString(m_StandardBoldFont, "X res: " + m_DeviceResX.ToString(), new Vector2(20, 40), Color.Black);
-        _spriteBatch.DrawString(m_StandardBoldFont, "Y res: " + m_DeviceResY.ToString(), new Vector2(20, 70), Color.Black);
-        _spriteBatch.DrawString(m_StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
+        _spriteBatch.DrawString(StandardBoldFont, "State: " + State, new Vector2(20, 10), Color.Black);
+        _spriteBatch.DrawString(StandardBoldFont, "X res: " + DeviceResX.ToString(), new Vector2(20, 40), Color.Black);
+        _spriteBatch.DrawString(StandardBoldFont, "Y res: " + DeviceResY.ToString(), new Vector2(20, 70), Color.Black);
 
-        switch(m_State)
+        switch(State)
         {
             case GameStates.Init:
+                DrawNameBox(ShapeParameters.NameBoxWidthBg / 2, DeviceResY - ShapeParameters.NameBoxOffset, Color.LightGray, Color.DarkGray);
+                DrawNameBox(ShapeParameters.NameBoxWidthBg + ShapeParameters.NameBoxOffset, DeviceResY - ShapeParameters.NameBoxOffset, Color.LightGray, Color.DarkGray);
+                DrawNameBox(DeviceResX - ShapeParameters.NameBoxWidthBg - ShapeParameters.NameBoxOffset, DeviceResY - ShapeParameters.NameBoxOffset, Color.LightGray, Color.DarkGray);
+                DrawNameBox(DeviceResX - ShapeParameters.NameBoxWidthBg / 2, DeviceResY - ShapeParameters.NameBoxOffset, Color.LightGray, Color.DarkGray);
                 break;
             case GameStates.PreGame:
+                _spriteBatch.DrawString(StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
                 break;
             case GameStates.EnteringPlayer:
-                _spriteBatch.DrawString(m_StandardBoldFont, "Enter player name: ", new Vector2((m_DeviceResX / 2) - (15 * 15 + 10 * 3), (m_DeviceResY / 2)), Color.Black);
-                _spriteBatch.DrawString(m_StandardBoldFont, m_TextBox, new Vector2((m_DeviceResX / 2), (m_DeviceResY / 2)), Color.Black);
-                _spriteBatch.DrawString(m_StandardBoldFont, m_TextBox.Length.ToString(), new Vector2((m_DeviceResX / 2), (m_DeviceResY / 2) + 40), Color.Black);
+                _spriteBatch.DrawString(StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
+                _spriteBatch.DrawString(StandardBoldFont, "Enter player name: ", new Vector2((DeviceResX / 2) - (15 * 15 + 10 * 3), (DeviceResY / 2)), Color.Black);
+                _spriteBatch.DrawString(StandardBoldFont, m_TextBox, new Vector2((DeviceResX / 2), (DeviceResY / 2)), Color.Black);
+                _spriteBatch.DrawString(StandardBoldFont, m_TextBox.Length.ToString(), new Vector2((DeviceResX / 2), (DeviceResY / 2) + 40), Color.Black);
                 break;
             case GameStates.Playing:
-                _spriteBatch.Draw(whiteRectangle, new Rectangle(500, 20, 80, 30), Color.Black);
+                //_spriteBatch.Draw(floor1, rec_floor1,, color1, 0.0f, Vector2.Zero, SpriteEffects.None, 2);
+                //_spriteBatch.Draw(pixel, new Rectangle(500, 20, 100, 100), null, Color.Black, 0.0f, Vector2.Zero, SpriteEffects.None, DrawLayers.Background);
+                //_spriteBatch.Draw(pixel, new Rectangle(500, 20, 100, 100), null, Color.White, 0.0f, Vector2.Zero, SpriteEffects.None, DrawLayers.Identifiers);
+                
+                DrawNameBox(DeviceResX / 2, DeviceResY / 2, Color.LightGray, Color.DarkGray);
+
+                //_spriteBatch.DrawString(StandardBoldFont, playerObjectArray[0].PlayerName, new Vector2(DeviceResX / 2, DeviceResY / 2), Color.Black);
+                //_spriteBatch.DrawString(StandardBoldFont, playerObjectArray[1].PlayerName, new Vector2(DeviceResX / 2, (DeviceResY / 2) + 40), Color.Black);
                 break;
             case GameStates.EndGame:
                 break;
@@ -157,13 +169,13 @@ public class Game1 : Game
                 break;
         }
 
-        if(m_Players.Count > 0)
+        if(AllPlayers.Count > 0)
         {
-            _spriteBatch.DrawString(m_StandardBoldFont, string.Join(", ", m_Players), new Vector2(140, 100), Color.Black);
+            _spriteBatch.DrawString(StandardBoldFont, string.Join(", ", AllPlayers), new Vector2(140, 100), Color.Black);
         }
 
         // Example: Draw a rectangle
-        //_spriteBatch.Draw(whiteRectangle, new Rectangle(500, 20, 80, 30), Color.Black);
+        //_spriteBatch.Draw(pixel, new Rectangle(500, 20, 80, 30), Color.Black);
         
         _spriteBatch.End();
 
@@ -172,7 +184,7 @@ public class Game1 : Game
 
     private void AddPlayer(string player)
     {
-        m_Players.Add(player);       
+        AllPlayers.Add(player);       
     }
 
     private void TextInputHandler(object sender, TextInputEventArgs args)
@@ -198,5 +210,13 @@ public class Game1 : Game
     private void MaximizeWindow()
     {
         SDL_MaximizeWindow(Window.Handle);
+    }
+
+    private void DrawNameBox(int centerX, int centerY, Color fgClr, Color bgClr)
+    {
+        _spriteBatch.Draw(pixel, new Rectangle(centerX - ShapeParameters.NameBoxWidthBg / 2, centerY - ShapeParameters.NameBoxHeightBg / 2, ShapeParameters.NameBoxWidthBg, ShapeParameters.NameBoxHeightBg), null, bgClr, 0.0f, Vector2.Zero, SpriteEffects.None, DrawLayers.NameBoxBg);
+        _spriteBatch.Draw(pixel, new Rectangle(centerX - ShapeParameters.NameBoxWidthFg / 2, centerY - ShapeParameters.NameBoxHeightFg / 2, ShapeParameters.NameBoxWidthFg, ShapeParameters.NameBoxHeightFg), null, fgClr, 0.0f, Vector2.Zero, SpriteEffects.None, DrawLayers.NameBoxFg);
+        
+        //_spriteBatch.DrawLine(new Vector2(700, 700), new Vector2(700, 1000), Color.Honeydew, 1.0f, DrawLayers.NameBox);
     }
 }
