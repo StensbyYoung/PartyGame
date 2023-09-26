@@ -19,7 +19,7 @@ public class Game1 : Game
     private SpriteFont StandardFont;
     private SpriteFont StandardBoldFont;
 
-    private StringBuilder m_TextBox = new StringBuilder();
+    private StringBuilder TextBox = new StringBuilder();
     private Texture2D pixel;
 
     private List<string> AllPlayers = new List<string>();
@@ -84,11 +84,11 @@ public class Game1 : Game
             case GameStates.PreGame:
                 if(Keyboard.GetState().IsKeyDown(Keys.C))
                 {
-                    m_TextBox.Clear();
+                    TextBox.Clear();
                 }
                 if(Keyboard.GetState().IsKeyDown(Keys.Add))
                 {
-                    m_TextBox.Clear();
+                    TextBox.Clear();
                     State = GameStates.EnteringPlayer;
                 }
                 if(Keyboard.GetState().IsKeyDown(Keys.P))
@@ -104,9 +104,10 @@ public class Game1 : Game
             case GameStates.EnteringPlayer:
                 if(Keyboard.GetState().IsKeyDown(Keys.Enter))
                 {
-                    if(m_TextBox.ToString() != "")
+                    if(TextBox.ToString() != "")
                     {
-                        AddPlayer(m_TextBox.ToString());
+                        AddPlayer(TextBox.ToString());
+                        playerObjectList.Add(new Player(TextBox.ToString(), Color.Black, PlayingMode.Standard));
                     }
                     State = GameStates.PreGame;
                 }
@@ -139,19 +140,25 @@ public class Game1 : Game
         switch(State)
         {
             case GameStates.Init:
+                //_spriteBatch.DrawLine(new Vector2(700, 3), new Vector2(1000, 3), Color.Black, 1.0f, DrawLayers.NameBoxBg);
                 DrawNameBox(ShapeParameters.NameBoxWidthBg / 2, DeviceResY - ShapeParameters.NameBoxOffset, Color.LightGray, Color.DarkGray);
                 DrawNameBox(ShapeParameters.NameBoxWidthBg + ShapeParameters.NameBoxOffset, DeviceResY - ShapeParameters.NameBoxOffset, Color.LightGray, Color.DarkGray);
                 DrawNameBox(DeviceResX - ShapeParameters.NameBoxWidthBg - ShapeParameters.NameBoxOffset, DeviceResY - ShapeParameters.NameBoxOffset, Color.LightGray, Color.DarkGray);
-                DrawNameBox(DeviceResX - ShapeParameters.NameBoxWidthBg / 2, DeviceResY - ShapeParameters.NameBoxOffset, Color.LightGray, Color.DarkGray);
+                DrawNameBox(DeviceResX - ShapeParameters.NameBoxWidthBg / 2, ShapeParameters.NameBoxHeightBg / 2, Color.LightGray, Color.DarkGray);
                 break;
             case GameStates.PreGame:
                 _spriteBatch.DrawString(StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
+                _spriteBatch.DrawString(StandardBoldFont, "Number of players: " + Player.numPlayers, new Vector2(20, 130), Color.Black);
+                foreach(var p in playerObjectList)
+                {
+                    _spriteBatch.DrawString(StandardBoldFont, p.PlayerName, new Vector2(20, 160 + 30 * p.PlayerID), p.PlayerColor);
+                }
                 break;
             case GameStates.EnteringPlayer:
                 _spriteBatch.DrawString(StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
                 _spriteBatch.DrawString(StandardBoldFont, "Enter player name: ", new Vector2((DeviceResX / 2) - (15 * 15 + 10 * 3), (DeviceResY / 2)), Color.Black);
-                _spriteBatch.DrawString(StandardBoldFont, m_TextBox, new Vector2((DeviceResX / 2), (DeviceResY / 2)), Color.Black);
-                _spriteBatch.DrawString(StandardBoldFont, m_TextBox.Length.ToString(), new Vector2((DeviceResX / 2), (DeviceResY / 2) + 40), Color.Black);
+                _spriteBatch.DrawString(StandardBoldFont, TextBox, new Vector2((DeviceResX / 2), (DeviceResY / 2)), Color.Black);
+                _spriteBatch.DrawString(StandardBoldFont, TextBox.Length.ToString(), new Vector2((DeviceResX / 2), (DeviceResY / 2) + 40), Color.Black);
                 break;
             case GameStates.Playing:
                 //_spriteBatch.Draw(floor1, rec_floor1,, color1, 0.0f, Vector2.Zero, SpriteEffects.None, 2);
@@ -195,15 +202,15 @@ public class Game1 : Game
 
         if(character == (char)Keys.Back)
         {
-            var index = m_TextBox.Length - 1;
+            var index = TextBox.Length - 1;
             if(index >= 0)
             {
-                m_TextBox.Remove(index, 1);
+                TextBox.Remove(index, 1);
             }
         }
         else
         {
-            m_TextBox.Append(character);
+            TextBox.Append(character);
         }
     }
 

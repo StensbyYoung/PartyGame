@@ -5,16 +5,30 @@ namespace TestGame;
 
 public class Player
 {
+    public static int numPlayers = 0;
+    private int ID, HP;
     private readonly string name;
     private Color playerColor;
-    private int HP;
     public int NameBoxCenterX, NameBoxCenterY;
     
+    // Constructor
     public Player(string c_playerName, Color c_color, PlayingMode c_mode)
     {
+        ID = numPlayers++;
         name = c_playerName;
         playerColor = c_color;
         HP = (int) c_mode;
+    }
+
+    // Finalizer (Destructor)
+    ~Player()
+    {
+        numPlayers--;
+    }
+
+    public int PlayerID
+    {
+        get{ return ID; }
     }
 
     public string PlayerName

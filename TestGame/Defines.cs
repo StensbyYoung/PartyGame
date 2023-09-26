@@ -9,6 +9,11 @@ namespace TestGame
         public const int NameBoxOffset = 250;
     }
 
+    public static class PositionCoords
+    {
+        public const int TopOfScreenYCoord = 32;
+    }
+
     public static class DrawLayers
     {
         public const float Identifiers = 0f;
