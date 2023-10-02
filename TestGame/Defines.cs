@@ -2,11 +2,12 @@ namespace TestGame
 {
     public static class ShapeParameters
     {
-        public const int NameBoxWidthFg = 185;
-        public const int NameBoxHeightFg = 65;
-        public const int NameBoxWidthBg = 200;
-        public const int NameBoxHeightBg = 80;
-        public const int NameBoxOffset = 250;
+        public const int NameBoxWidthFg = 170;
+        public const int NameBoxHeightFg = 60;
+        public const int NameBoxWidthBg = 182;
+        public const int NameBoxHeightBg = 72;
+        public const int NameBoxWidthOffset = (NameBoxWidthBg - NameBoxWidthFg) / 2;
+        public const int NameBoxHeightOffset = (NameBoxHeightBg - NameBoxHeightFg) / 2;
     }
 
     public static class PositionCoords

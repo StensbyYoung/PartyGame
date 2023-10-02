@@ -5,8 +5,9 @@ namespace TestGame;
 
 public class Player
 {
-    public static int numPlayers = 0;
-    private int ID, HP;
+    private static int numPlayers = 0;
+    private readonly int ID;
+    private int HP;
     private readonly string name;
     private Color playerColor;
     public int NameBoxCenterX, NameBoxCenterY;
@@ -46,5 +47,10 @@ public class Player
     {
         get{ return playerColor; }
         set{ playerColor = value; }
+    }
+
+    public static int NumberOfPlayers
+    {
+        get{ return numPlayers; }
     }
 }
