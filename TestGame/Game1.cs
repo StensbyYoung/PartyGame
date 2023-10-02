@@ -140,8 +140,7 @@ public class Game1 : Game
         switch(State)
         {
             case GameStates.Init:
-                DrawEnterPlayerBox(DeviceResX/2, DeviceResY/2, Color.Black);
-                DrawEnterPlayerBox(0, 0, Color.RosyBrown);
+                DrawSmallTextBox(DeviceResX/2, DeviceResY/2, Color.Fuchsia);
                 break;
             case GameStates.PreGame:
                 _spriteBatch.DrawString(StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
@@ -209,6 +208,7 @@ public class Game1 : Game
 
     private void DrawNameBox(int boxCenterX, int boxCenterY, Color fgClr, Color bgClr, Player p)
     {
+        /*
         var len = StandardBoldFont.MeasureString(p.PlayerName);
         var xCoordString = boxCenterX - (len.Length() / 2);
         var yCoordString = boxCenterY - ShapeParameters.NameBoxHeightFg / 4;
@@ -219,12 +219,18 @@ public class Game1 : Game
         _spriteBatch.Draw(pixel, recBg, null, bgClr, 0.0f, Vector2.Zero, SpriteEffects.None, DrawLayers.NameBoxBg);
         _spriteBatch.Draw(pixel, recFg, null, fgClr, 0.0f, Vector2.Zero, SpriteEffects.None, DrawLayers.NameBoxFg);
         _spriteBatch.DrawString(StandardBoldFont, p.PlayerName, new Vector2(xCoordString, yCoordString), p.PlayerColor);
+        */
     }
 
-    private void DrawEnterPlayerBox(int boxCenterX, int boxCenterY, Color clr)
+    private void DrawSmallTextBox(int boxCenterX, int boxCenterY, Color clr)
     {
-        int posX = boxCenterX - (ShapeParameters.NameBoxWidthBg / 2);
-        int posY = boxCenterY - (ShapeParameters.NameBoxHeightBg / 2);
-        _spriteBatch.Draw(RoundedRectangleBg, new Vector2(posX, posY), clr);
+        int posXBg = boxCenterX - (ShapeParameters.SmallTextBoxWidthBg / 2);
+        int posYBg = boxCenterY - (ShapeParameters.SmallTextBoxHeightBg / 2);
+        int posXFg = boxCenterX - (ShapeParameters.SmallTextBoxWidthFg / 2);
+        int posYFg = boxCenterY - (ShapeParameters.SmallTextBoxHeightFg / 2);
+        Vector2 posBg = new (posXBg, posYBg);
+        Vector2 posFg = new (posXFg, posYFg);
+        _spriteBatch.Draw(RoundedRectangleBg, posBg, clr);
+        _spriteBatch.Draw(RoundedRectangleFg, posFg, Color.BlanchedAlmond);
     }
 }
