@@ -140,7 +140,7 @@ public class Game1 : Game
         switch(State)
         {
             case GameStates.Init:
-                DrawSmallTextBox(DeviceResX/2, DeviceResY/2, Color.Fuchsia);
+                DrawSmallTextBox(DeviceResX/4, DeviceResY/4, Color.Fuchsia);
                 break;
             case GameStates.PreGame:
                 _spriteBatch.DrawString(StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
@@ -159,7 +159,7 @@ public class Game1 : Game
             case GameStates.Playing:                
                 foreach(var p in playerObjectList)
                 {
-                    DrawNameBox(200, 300 + p.PlayerID * 200, Color.LightGray, Color.DarkGray, p);
+                    DrawNameBox(DeviceResX/2, DeviceResY/2, Color.Fuchsia, p);
                 }
                 break;
             case GameStates.EndGame:
@@ -206,23 +206,7 @@ public class Game1 : Game
         SDL_MaximizeWindow(Window.Handle);
     }
 
-    private void DrawNameBox(int boxCenterX, int boxCenterY, Color fgClr, Color bgClr, Player p)
-    {
-        /*
-        var len = StandardBoldFont.MeasureString(p.PlayerName);
-        var xCoordString = boxCenterX - (len.Length() / 2);
-        var yCoordString = boxCenterY - ShapeParameters.NameBoxHeightFg / 4;
-
-        Rectangle recBg = new (boxCenterX - ShapeParameters.NameBoxWidthBg / 2, boxCenterY - ShapeParameters.NameBoxHeightBg / 2, ShapeParameters.NameBoxWidthBg, ShapeParameters.NameBoxHeightBg);
-        Rectangle recFg = new (boxCenterX - ShapeParameters.NameBoxWidthFg / 2, boxCenterY - ShapeParameters.NameBoxHeightFg / 2, ShapeParameters.NameBoxWidthFg, ShapeParameters.NameBoxHeightFg);
-
-        _spriteBatch.Draw(pixel, recBg, null, bgClr, 0.0f, Vector2.Zero, SpriteEffects.None, DrawLayers.NameBoxBg);
-        _spriteBatch.Draw(pixel, recFg, null, fgClr, 0.0f, Vector2.Zero, SpriteEffects.None, DrawLayers.NameBoxFg);
-        _spriteBatch.DrawString(StandardBoldFont, p.PlayerName, new Vector2(xCoordString, yCoordString), p.PlayerColor);
-        */
-    }
-
-    private void DrawSmallTextBox(int boxCenterX, int boxCenterY, Color clr)
+    private void DrawSmallTextBox(int boxCenterX, int boxCenterY, Color edgeClr)
     {
         int posXBg = boxCenterX - (ShapeParameters.SmallTextBoxWidthBg / 2);
         int posYBg = boxCenterY - (ShapeParameters.SmallTextBoxHeightBg / 2);
@@ -230,7 +214,17 @@ public class Game1 : Game
         int posYFg = boxCenterY - (ShapeParameters.SmallTextBoxHeightFg / 2);
         Vector2 posBg = new (posXBg, posYBg);
         Vector2 posFg = new (posXFg, posYFg);
-        _spriteBatch.Draw(RoundedRectangleBg, posBg, clr);
+        _spriteBatch.Draw(RoundedRectangleBg, posBg, edgeClr);
         _spriteBatch.Draw(RoundedRectangleFg, posFg, Color.BlanchedAlmond);
+    }
+
+    private void DrawNameBox(int boxCenterX, int boxCenterY, Color edgeClr, Player p)
+    {
+        var len = StandardBoldFont.MeasureString(p.PlayerName);
+        var xCoordString = boxCenterX - (len.Length() / 2);
+        var yCoordString = boxCenterY - ShapeParameters.SmallTextBoxHeightFg / 4;
+
+        DrawSmallTextBox(boxCenterX, boxCenterY, edgeClr);
+        _spriteBatch.DrawString(StandardBoldFont, p.PlayerName, new Vector2(xCoordString, yCoordString), Color.Black);
     }
 }
