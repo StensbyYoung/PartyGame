@@ -26,8 +26,10 @@ public class Game1 : Game
     private GameStates State = GameStates.Init;
     private int DeviceResY;
     private int DeviceResX;
-    private List<Player> playerObjectList = new ();
-    private Player[] playerObjectArray = new Player[20];
+    private List<Player> PlayerObjectList = new ();
+
+    private int loserID, hitPlayer;
+    private bool playLock = false;
 
     private const string SDL = "SDL2.dll";
     [DllImport(SDL, CallingConvention = CallingConvention.Cdecl)]
@@ -86,39 +88,89 @@ public class Game1 : Game
                 {
                     TextBox.Clear();
                 }
+
                 if(Keyboard.GetState().IsKeyDown(Keys.Add))
                 {
                     TextBox.Clear();
-                    State = GameStates.EnteringPlayer;
+                    State = GameStates.EnterPlayer;
                 }
-                if(Keyboard.GetState().IsKeyDown(Keys.P))
-                {                    
-                    for(int i = 0; i < AllPlayers.Count; i++)
-                    {
-                        playerObjectArray[i] = new Player(AllPlayers[i], Color.Crimson, PlayingMode.Standard);
-                    }
 
+                if(Keyboard.GetState().IsKeyDown(Keys.P))
+                {
+                    TextBox.Clear();
                     State = GameStates.Playing;
                 }
+
+                if(Keyboard.GetState().IsKeyDown(Keys.R))
+                {
+                    ResetGame();
+                }
+
+                if(Keyboard.GetState().IsKeyDown(Keys.Subtract))
+                {
+                    TextBox.Clear();
+                    State = GameStates.RemovePlayer;
+                }
                 break;
-            case GameStates.EnteringPlayer:
+            case GameStates.RemovePlayer:
+                if(Keyboard.GetState().IsKeyDown(Keys.Enter))
+                {
+                    if(int.TryParse(TextBox.ToString(), out int RemoveIdx))
+                    {
+                        if(RemoveIdx > PlayerObjectList.Count)
+                        {
+                            State = GameStates.PreGame;
+                            break;
+                        }
+                        PlayerObjectList.RemoveAt(RemoveIdx);
+                        AllPlayers.RemoveAt(RemoveIdx);
+                        Player.NumberOfPlayers--;
+                        for(int i = RemoveIdx; i < PlayerObjectList.Count; i++)
+                        {
+                            PlayerObjectList[i].PlayerID--;
+                        }
+                    }
+                    State = GameStates.PreGame;
+                }
+                break;
+            case GameStates.EnterPlayer:
                 if(Keyboard.GetState().IsKeyDown(Keys.Enter))
                 {
                     if(TextBox.ToString() != "")
                     {
                         AddPlayer(TextBox.ToString());
-                        playerObjectList.Add(new Player(TextBox.ToString(), Color.Black, PlayingMode.Standard));
+                        PlayerObjectList.Add(new Player(TextBox.ToString(), Color.Black, PlayingMode.Standard));
                     }
                     State = GameStates.PreGame;
                 }
-                if(Keyboard.GetState().IsKeyDown(Keys.Multiply))
-                {
-                    ;
-                }
                 break;
             case GameStates.Playing:
+                if(Keyboard.GetState().IsKeyUp(Keys.Space))
+                {
+                    playLock = false;
+                }
+
+                if(Keyboard.GetState().IsKeyDown(Keys.Space) && !playLock)
+                {
+                    playLock = true;
+                    hitPlayer = Functions.GetRandomNumber(0, PlayerObjectList.Count);
+                    if(--PlayerObjectList[hitPlayer].PlayerHP == 0)
+                    {
+                        loserID = PlayerObjectList[hitPlayer].PlayerID;
+                        State = GameStates.EndGame;
+                    }
+                }
+                if(Keyboard.GetState().IsKeyDown(Keys.Home))
+                {
+                    State = GameStates.PreGame;
+                }
                 break;
             case GameStates.EndGame:
+                if(Keyboard.GetState().IsKeyDown(Keys.Home))
+                {
+                    ResetGame();
+                    State = GameStates.PreGame;
+                }
                 break;
             default:
                 break;
@@ -145,24 +197,26 @@ public class Game1 : Game
             case GameStates.PreGame:
                 _spriteBatch.DrawString(StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
                 _spriteBatch.DrawString(StandardBoldFont, "Number of players: " + Player.NumberOfPlayers, new Vector2(20, 130), Color.Black);
-                foreach(var p in playerObjectList)
+                foreach(var p in PlayerObjectList)
                 {
                     _spriteBatch.DrawString(StandardBoldFont, p.PlayerName, new Vector2(20, 160 + 30 * p.PlayerID), p.PlayerColor);
                 }
                 break;
-            case GameStates.EnteringPlayer:
+            case GameStates.EnterPlayer:
                 _spriteBatch.DrawString(StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
                 _spriteBatch.DrawString(StandardBoldFont, "Enter player name: ", new Vector2((DeviceResX / 2) - (15 * 15 + 10 * 3), (DeviceResY / 2)), Color.Black);
-                _spriteBatch.DrawString(StandardBoldFont, TextBox, new Vector2((DeviceResX / 2), (DeviceResY / 2)), Color.Black);
-                _spriteBatch.DrawString(StandardBoldFont, TextBox.Length.ToString(), new Vector2((DeviceResX / 2), (DeviceResY / 2) + 40), Color.Black);
+                _spriteBatch.DrawString(StandardBoldFont, TextBox, new Vector2(DeviceResX / 2, DeviceResY / 2), Color.Black);
+                _spriteBatch.DrawString(StandardBoldFont, TextBox.Length.ToString(), new Vector2(DeviceResX / 2, (DeviceResY / 2) + 40), Color.Black);
                 break;
-            case GameStates.Playing:                
-                foreach(var p in playerObjectList)
+            case GameStates.Playing: 
+                _spriteBatch.DrawString(StandardBoldFont, "Random number: " + hitPlayer, new Vector2(DeviceResX / 2, DeviceResY - 100), Color.Black);               
+                foreach(var p in PlayerObjectList)
                 {
-                    DrawNameBox(DeviceResX/2, DeviceResY/2, Color.Fuchsia, p);
+                    DrawNameBox(DeviceResX / 2, DeviceResY / 2, Color.Fuchsia, p);
                 }
                 break;
             case GameStates.EndGame:
+                _spriteBatch.DrawString(StandardBoldFont, "The loser is : " + PlayerObjectList[loserID].PlayerName, new Vector2(DeviceResX / 2, DeviceResY / 2), Color.Black);
                 break;
             default:
                 break;
@@ -176,6 +230,8 @@ public class Game1 : Game
         _spriteBatch.End();
         base.Draw(gameTime);
     }
+
+    
 
     private void AddPlayer(string player)
     {
@@ -226,5 +282,13 @@ public class Game1 : Game
 
         DrawSmallTextBox(boxCenterX, boxCenterY, edgeClr);
         _spriteBatch.DrawString(StandardBoldFont, p.PlayerName, new Vector2(xCoordString, yCoordString), Color.Black);
+    }
+
+    private void ResetGame()
+    {
+        PlayerObjectList.Clear();
+        AllPlayers.Clear();
+        TextBox.Clear();
+        Player.NumberOfPlayers = 0;
     }
 }
