@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace TestGame;
 
 public static class ShapeParameters
@@ -13,6 +15,9 @@ public static class ShapeParameters
 public static class PositionCoords
 {
     public const int TopOfScreenYCoord = 32;
+    public const int FirstNameBoxYCoord = 300;
+    public const int NameBoxXCoord = ShapeParameters.SmallTextBoxWidthBg / 2;
+    public const int FrameOffset = 20;
 }
 
 public static class DrawLayers
@@ -30,6 +35,7 @@ public enum GameStates
     RemovePlayer,
     EnterPlayer,
     Playing,
+    Pause,
     EndGame
 }
 

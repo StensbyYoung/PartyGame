@@ -20,7 +20,7 @@ public class Game1 : Game
     private SpriteFont StandardBoldFont;
     private Texture2D RoundedRectangleFg;
     private Texture2D RoundedRectangleBg;
-    private Texture2D pixel;
+    private Texture2D Pixel;
     private StringBuilder TextBox = new ();
     private List<string> AllPlayers = new ();
     private GameStates State = GameStates.Init;
@@ -29,7 +29,8 @@ public class Game1 : Game
     private List<Player> PlayerObjectList = new ();
 
     private int loserID, hitPlayer;
-    private bool playLock = false;
+    private bool GhostingLock_space, GhostingLock_down, GameIsPaused;
+    private int ElapsedTime;
 
     private const string SDL = "SDL2.dll";
     [DllImport(SDL, CallingConvention = CallingConvention.Cdecl)]
@@ -54,14 +55,18 @@ public class Game1 : Game
         SDL_MaximizeWindow(Window.Handle);
         _graphics.ApplyChanges();
 
+        GhostingLock_space = GhostingLock_down = false;
+        GameIsPaused = true;
+        ElapsedTime = 0;
+
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-        pixel = new Texture2D(GraphicsDevice, 1, 1);
-        pixel.SetData(new[] { Color.White} );
+        Pixel = new Texture2D(GraphicsDevice, 1, 1);
+        Pixel.SetData(new[] { Color.White} );
         StandardFont = Content.Load<SpriteFont>("Fonts/standardFont");
         StandardBoldFont = Content.Load<SpriteFont>("Fonts/standardBoldFont");
         RoundedRectangleFg = Content.Load<Texture2D>("Images/roundedRectangleFg");
@@ -98,7 +103,7 @@ public class Game1 : Game
                 if(Keyboard.GetState().IsKeyDown(Keys.P))
                 {
                     TextBox.Clear();
-                    State = GameStates.Playing;
+                    State = GameStates.Pause;
                 }
 
                 if(Keyboard.GetState().IsKeyDown(Keys.R))
@@ -145,24 +150,50 @@ public class Game1 : Game
                 }
                 break;
             case GameStates.Playing:
+                if(Keyboard.GetState().IsKeyUp(Keys.Down))
+                {
+                    GhostingLock_down = false;
+                }
                 if(Keyboard.GetState().IsKeyUp(Keys.Space))
                 {
-                    playLock = false;
+                    GhostingLock_space = false;
                 }
-
-                if(Keyboard.GetState().IsKeyDown(Keys.Space) && !playLock)
+                if(Keyboard.GetState().IsKeyDown(Keys.Space) && !GhostingLock_space)
                 {
-                    playLock = true;
-                    hitPlayer = Functions.GetRandomNumber(0, PlayerObjectList.Count);
-                    if(--PlayerObjectList[hitPlayer].PlayerHP == 0)
+                    GhostingLock_space = true;
+                    GameIsPaused = true;
+                    State = GameStates.Pause;
+                    break;
+                }
+                if(!GameIsPaused)
+                {
+                    ElapsedTime += gameTime.ElapsedGameTime.Milliseconds;
+                    if(Keyboard.GetState().IsKeyDown(Keys.Down) && !GhostingLock_down)
                     {
-                        loserID = PlayerObjectList[hitPlayer].PlayerID;
-                        State = GameStates.EndGame;
+                        GhostingLock_down = true;
+                        hitPlayer = Functions.GetRandomNumber(0, PlayerObjectList.Count);
+                        if(--PlayerObjectList[hitPlayer].PlayerHP == 0)
+                        {
+                            loserID = PlayerObjectList[hitPlayer].PlayerID;
+                            State = GameStates.EndGame;
+                        }
                     }
                 }
                 if(Keyboard.GetState().IsKeyDown(Keys.Home))
                 {
                     State = GameStates.PreGame;
+                }
+                break;
+            case GameStates.Pause:
+                if(Keyboard.GetState().IsKeyUp(Keys.Space))
+                {
+                    GhostingLock_space = false;
+                }
+                if(Keyboard.GetState().IsKeyDown(Keys.Space) && !GhostingLock_space)
+                {
+                    GhostingLock_space = true;
+                    GameIsPaused = false;
+                    State = GameStates.Playing;
                 }
                 break;
             case GameStates.EndGame:
@@ -185,6 +216,7 @@ public class Game1 : Game
 
         _spriteBatch.Begin();
 
+        _spriteBatch.DrawString(StandardBoldFont, "Elapsed time in ms: " + ElapsedTime, new Vector2(DeviceResX / 2, DeviceResY - 200), Color.Black);
         _spriteBatch.DrawString(StandardBoldFont, "State: " + State, new Vector2(20, 10), Color.Black);
         _spriteBatch.DrawString(StandardBoldFont, "X res: " + DeviceResX.ToString(), new Vector2(20, 40), Color.Black);
         _spriteBatch.DrawString(StandardBoldFont, "Y res: " + DeviceResY.ToString(), new Vector2(20, 70), Color.Black);
@@ -203,17 +235,20 @@ public class Game1 : Game
                 }
                 break;
             case GameStates.EnterPlayer:
+                _spriteBatch.DrawString(StandardBoldFont, "Elapsed time in ms: " + ElapsedTime, new Vector2(DeviceResX / 2, DeviceResY - 200), Color.Black);
                 _spriteBatch.DrawString(StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
                 _spriteBatch.DrawString(StandardBoldFont, "Enter player name: ", new Vector2((DeviceResX / 2) - (15 * 15 + 10 * 3), (DeviceResY / 2)), Color.Black);
                 _spriteBatch.DrawString(StandardBoldFont, TextBox, new Vector2(DeviceResX / 2, DeviceResY / 2), Color.Black);
                 _spriteBatch.DrawString(StandardBoldFont, TextBox.Length.ToString(), new Vector2(DeviceResX / 2, (DeviceResY / 2) + 40), Color.Black);
                 break;
-            case GameStates.Playing: 
-                _spriteBatch.DrawString(StandardBoldFont, "Random number: " + hitPlayer, new Vector2(DeviceResX / 2, DeviceResY - 100), Color.Black);               
+            case GameStates.Playing:              
                 foreach(var p in PlayerObjectList)
                 {
-                    DrawNameBox(DeviceResX / 2, DeviceResY / 2, Color.Fuchsia, p);
+                    DrawNameBox(PositionCoords.NameBoxXCoord, PositionCoords.FirstNameBoxYCoord, p);
                 }
+                break;
+            case GameStates.Pause:
+                _spriteBatch.DrawString(StandardBoldFont, "GAME IS PAUSED", new Vector2(DeviceResX / 2, DeviceResY / 2), Color.Black);
                 break;
             case GameStates.EndGame:
                 _spriteBatch.DrawString(StandardBoldFont, "The loser is : " + PlayerObjectList[loserID].PlayerName, new Vector2(DeviceResX / 2, DeviceResY / 2), Color.Black);
@@ -274,14 +309,18 @@ public class Game1 : Game
         _spriteBatch.Draw(RoundedRectangleFg, posFg, Color.BlanchedAlmond);
     }
 
-    private void DrawNameBox(int boxCenterX, int boxCenterY, Color edgeClr, Player p)
+    private void DrawNameBox(int centerAnchorX, int centerAnchorY, Player p)
     {
         var len = StandardBoldFont.MeasureString(p.PlayerName);
+        int boxCenterX = centerAnchorX + PositionCoords.FrameOffset;
+        int boxCenterY = centerAnchorY + p.PlayerID * 200;
+        int xCoordHP = boxCenterX + ShapeParameters.SmallTextBoxWidthOffset + ShapeParameters.SmallTextBoxWidthBg / 2;
         var xCoordString = boxCenterX - (len.Length() / 2);
         var yCoordString = boxCenterY - ShapeParameters.SmallTextBoxHeightFg / 4;
 
-        DrawSmallTextBox(boxCenterX, boxCenterY, edgeClr);
+        DrawSmallTextBox(boxCenterX, boxCenterY, Color.Black);
         _spriteBatch.DrawString(StandardBoldFont, p.PlayerName, new Vector2(xCoordString, yCoordString), Color.Black);
+        _spriteBatch.DrawString(StandardBoldFont, p.PlayerHP.ToString(), new Vector2(xCoordHP, yCoordString), Color.Black);
     }
 
     private void ResetGame()
@@ -290,5 +329,6 @@ public class Game1 : Game
         AllPlayers.Clear();
         TextBox.Clear();
         Player.NumberOfPlayers = 0;
+        ElapsedTime = 0;
     }
 }
