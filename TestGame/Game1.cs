@@ -171,6 +171,17 @@ public class Game1 : Game
                     if(Keyboard.GetState().IsKeyDown(Keys.Down) && !GhostingLock_down)
                     {
                         GhostingLock_down = true;
+                        ElapsedTime = 0;
+                        hitPlayer = Functions.GetRandomNumber(0, PlayerObjectList.Count);
+                        if(--PlayerObjectList[hitPlayer].PlayerHP == 0)
+                        {
+                            loserID = PlayerObjectList[hitPlayer].PlayerID;
+                            State = GameStates.EndGame;
+                        }
+                    }
+                    else if(ElapsedTime >= (int)TimerValues.ThreeSeconds)
+                    {
+                        ElapsedTime = 0;
                         hitPlayer = Functions.GetRandomNumber(0, PlayerObjectList.Count);
                         if(--PlayerObjectList[hitPlayer].PlayerHP == 0)
                         {

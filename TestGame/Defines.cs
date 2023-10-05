@@ -28,6 +28,15 @@ public static class DrawLayers
     public const float Background = 0.3f;
 }
 
+public enum TimerValues
+{
+    OneSecond = 1000,
+    TwoSeconds = 2000,
+    ThreeSeconds = 3000,
+    FourSeconds = 4000,
+    FiveSeconds = 5000,
+}
+
 public enum GameStates
 {
     Init,
