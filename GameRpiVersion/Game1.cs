@@ -1,4 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -8,6 +12,9 @@ public class Game1 : Game
 {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
+    private SpriteFont StandardBoldFont;
+    private Texture2D RoundedRectangleFg;
+    private Texture2D RoundedRectangleBg;
 
     public Game1()
     {
@@ -26,6 +33,9 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
+        StandardBoldFont = Content.Load<SpriteFont>("Fonts/standardBoldFont");
+        RoundedRectangleFg = Content.Load<Texture2D>("Images/roundedRectangleFg");
+        RoundedRectangleBg = Content.Load<Texture2D>("Images/roundedRectangleBg");
 
         // TODO: use this.Content to load your game content here
     }
