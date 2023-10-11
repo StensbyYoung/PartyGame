@@ -20,6 +20,8 @@ public class Game1 : Game
     private SpriteFont StandardBoldFont;
     private Texture2D RoundedRectangleFg;
     private Texture2D RoundedRectangleBg;
+    private Texture2D HpBg;
+    private Texture2D SingleHpPoint;
     private Texture2D Pixel;
     private StringBuilder TextBox = new ();
     private List<string> AllPlayers = new ();
@@ -71,6 +73,8 @@ public class Game1 : Game
         StandardBoldFont = Content.Load<SpriteFont>("Fonts/standardBoldFont");
         RoundedRectangleFg = Content.Load<Texture2D>("Images/roundedRectangleFg");
         RoundedRectangleBg = Content.Load<Texture2D>("Images/roundedRectangleBg");
+        SingleHpPoint = Content.Load<Texture2D>("Images/HpPoint");
+        HpBg = Content.Load<Texture2D>("Images/HpBg");
     }
 
     protected override void Update(GameTime gameTime)
@@ -235,6 +239,10 @@ public class Game1 : Game
         switch(State)
         {
             case GameStates.Init:
+                Vector2 temp_location1 = new (700, 700);
+                Vector2 temp_location2 = new (700+ShapeParameters.SingleHpOffset, 700+ShapeParameters.SingleHpOffset);
+                _spriteBatch.Draw(HpBg, temp_location1, Color.Black);
+                _spriteBatch.Draw(SingleHpPoint, temp_location2, Color.LawnGreen);
                 DrawSmallTextBox(DeviceResX/4, DeviceResY/4, Color.Fuchsia);
                 break;
             case GameStates.PreGame:
@@ -332,6 +340,11 @@ public class Game1 : Game
         DrawSmallTextBox(boxCenterX, boxCenterY, Color.Black);
         _spriteBatch.DrawString(StandardBoldFont, p.PlayerName, new Vector2(xCoordString, yCoordString), Color.Black);
         _spriteBatch.DrawString(StandardBoldFont, p.PlayerHP.ToString(), new Vector2(xCoordHP, yCoordString), Color.Black);
+    }
+
+    private void DrawHpBox(int HP)
+    {
+        
     }
 
     private void ResetGame()
