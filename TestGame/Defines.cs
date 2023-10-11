@@ -10,6 +10,12 @@ public static class ShapeParameters
     public const int SmallTextBoxHeightBg = 72;
     public const int SmallTextBoxWidthOffset = (SmallTextBoxWidthBg - SmallTextBoxWidthFg) / 2;
     public const int SmallTextBoxHeightOffset = (SmallTextBoxHeightBg - SmallTextBoxHeightFg) / 2;
+
+    public const int HpBoxBgWidth = 182;
+    public const int HpBoxBgHeight = 28;
+    public const int SingleHpBoxWidth = 34;
+    public const int SingleHpBoxHeight = 24;
+    public const int SingleHpOffset = 2;
 }
 
 public static class PositionCoords
