@@ -34,7 +34,7 @@ public class Game1 : Game
 
     private const string SDL = "SDL2.dll";
     [DllImport(SDL, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void SDL_MaximizeWindow(IntPtr window);
+    private static extern void SDL_MaximizeWindow(IntPtr window);
 
     public Game1()
     {
