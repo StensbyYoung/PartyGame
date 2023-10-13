@@ -14,4 +14,19 @@ A list of TODOs that I will try to keep up to date.
 - Get premade or create some simple sounds myself
 
 ## Game Logic
-- Mucho worko
+- Write/read from file
+  - Allows for highscore type data
+- Import C library for RPI sensehat LED matrix funtionality
+  - .def file
+  - import dll
+  - P/Invoke
+  - See old tetris game on RPI 
+- Clickable objects
+  - Related to drawing
+
+## Other
+- Any fun integrations?
+  - Python programming
+- Website/database/frontend
+  - React?
+- Could Rust be used for something?
