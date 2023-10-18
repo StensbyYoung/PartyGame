@@ -28,8 +28,8 @@ public class Game1 : Game
     private int DeviceResX;
     private List<Player> PlayerObjectList = new ();
 
-    private int loserID, hitPlayer;
-    private bool GhostingLock_space, GhostingLock_down, GameIsPaused;
+    private int loserID, hitPlayer, rowCount, colCount;
+    private bool GhostingLock_space, GhostingLock_down, GhostingLock_enter, GameIsPaused;
     private int ElapsedTime;
 
     private const string SDL = "SDL2.dll";
@@ -52,10 +52,10 @@ public class Game1 : Game
         _graphics.PreferredBackBufferWidth = DeviceResX;
         _graphics.PreferredBackBufferHeight = DeviceResY;
         Window.Position = new Point(0,0);
-        SDL_MaximizeWindow(Window.Handle);
+        MaximizeWindow();
         _graphics.ApplyChanges();
 
-        GhostingLock_space = GhostingLock_down = false;
+        GhostingLock_space = GhostingLock_down = GhostingLock_enter = false;
         GameIsPaused = true;
         ElapsedTime = 0;
 
@@ -87,6 +87,8 @@ public class Game1 : Game
             case GameStates.Init:
                 if(Keyboard.GetState().IsKeyDown(Keys.Space))
                 {
+                    colCount = 1;
+                    rowCount = 1;
                     State = GameStates.PreGame;
                 }
                 break;
@@ -95,9 +97,13 @@ public class Game1 : Game
                 {
                     TextBox.Clear();
                 }
-
-                if(Keyboard.GetState().IsKeyDown(Keys.Add))
+                if(Keyboard.GetState().IsKeyUp(Keys.Enter))
                 {
+                    GhostingLock_enter = false;
+                }
+                if(Keyboard.GetState().IsKeyDown(Keys.Enter) && !GhostingLock_enter)
+                {
+                    GhostingLock_enter = true;
                     TextBox.Clear();
                     State = GameStates.EnterPlayer;
                 }
@@ -105,6 +111,12 @@ public class Game1 : Game
                 if(Keyboard.GetState().IsKeyDown(Keys.P))
                 {
                     TextBox.Clear();
+
+                    foreach(var p in PlayerObjectList)
+                    {
+                        SetNameBoxCoords(p);
+                    }
+                    
                     State = GameStates.Pause;
                 }
 
@@ -141,8 +153,13 @@ public class Game1 : Game
                 }
                 break;
             case GameStates.EnterPlayer:
-                if(Keyboard.GetState().IsKeyDown(Keys.Enter))
+                if(Keyboard.GetState().IsKeyUp(Keys.Enter))
                 {
+                    GhostingLock_enter = false;
+                }
+                if(Keyboard.GetState().IsKeyDown(Keys.Enter) && !GhostingLock_enter)
+                {
+                    GhostingLock_enter = true;
                     if(TextBox.ToString() != "")
                     {
                         AddPlayer(TextBox.ToString());
@@ -237,10 +254,6 @@ public class Game1 : Game
         switch(State)
         {
             case GameStates.Init:
-                Vector2 temp_location1 = new (700, 700);
-                Vector2 temp_location2 = new (700+ShapeParameters.SingleHpOffset, 700+ShapeParameters.SingleHpOffset);
-                _spriteBatch.Draw(HpBg, temp_location1, Color.Black);
-                _spriteBatch.Draw(SingleHpPoint, temp_location2, Color.LawnGreen);
                 DrawSmallTextBox(DeviceResX/4, DeviceResY/4, Color.Fuchsia);
                 break;
             case GameStates.PreGame:
@@ -258,11 +271,16 @@ public class Game1 : Game
                 _spriteBatch.DrawString(StandardBoldFont, TextBox, new Vector2(DeviceResX / 2, DeviceResY / 2), Color.Black);
                 _spriteBatch.DrawString(StandardBoldFont, TextBox.Length.ToString(), new Vector2(DeviceResX / 2, (DeviceResY / 2) + 40), Color.Black);
                 break;
-            case GameStates.Playing:              
+            case GameStates.Playing:
+                //DrawSmallTextBox(DeviceResX/2, ShapeParameters.SmallTextBoxHeightBg, Color.Black);
+                //DrawSmallTextBox(DeviceResX/2 - 100, 2 * ShapeParameters.SmallTextBoxHeightBg, Color.Black);
+                DrawPlayerBoxes();       
+                /*
                 foreach(var p in PlayerObjectList)
                 {
                     DrawNameBox(PositionCoords.NameBoxXCoord, PositionCoords.FirstNameBoxYCoord, p);
                 }
+                */
                 break;
             case GameStates.Pause:
                 _spriteBatch.DrawString(StandardBoldFont, "GAME IS PAUSED", new Vector2(DeviceResX / 2, DeviceResY / 2), Color.Black);
@@ -326,22 +344,52 @@ public class Game1 : Game
         _spriteBatch.Draw(RoundedRectangleFg, posFg, Color.BlanchedAlmond);
     }
 
-    private void DrawNameBox(int centerAnchorX, int centerAnchorY, Player p)
+    private void DrawNameBox(Player p)
     {
         var len = StandardBoldFont.MeasureString(p.PlayerName);
-        int boxCenterX = centerAnchorX + PositionCoords.FrameOffset;
-        int boxCenterY = centerAnchorY + p.PlayerID * 200;
-        int xCoordHP = boxCenterX + ShapeParameters.SmallTextBoxWidthOffset + ShapeParameters.SmallTextBoxWidthBg / 2;
-        var xCoordString = boxCenterX - (len.Length() / 2);
-        var yCoordString = boxCenterY - ShapeParameters.SmallTextBoxHeightFg / 4;
+        var xCoordString = p.NameBoxCenterX - (len.Length() / 2);
+        var yCoordString = p.NameBoxCenterY - ShapeParameters.SmallTextBoxHeightFg / 4;
 
-        DrawSmallTextBox(boxCenterX, boxCenterY, Color.Black);
+        DrawSmallTextBox(p.NameBoxCenterX, p.NameBoxCenterY, Color.Black);
         _spriteBatch.DrawString(StandardBoldFont, p.PlayerName, new Vector2(xCoordString, yCoordString), Color.Black);
-        _spriteBatch.DrawString(StandardBoldFont, p.PlayerHP.ToString(), new Vector2(xCoordHP, yCoordString), Color.Black);
     }
 
-    private void DrawHpBox(int HP)
+    private void DrawHpBox(int coordX, int coordY, int HP)
     {
+        int anchorX = coordX - (ShapeParameters.SmallTextBoxWidthBg / 2);
+        int anchorY = coordY + (ShapeParameters.SmallTextBoxHeightBg / 2);
+        
+        Vector2 bg = new (anchorX, anchorY);
+        _spriteBatch.Draw(HpBg, bg, Color.Black);
+
+        switch(HP)
+        {
+            case 5:
+                Vector2 HpBox5 = new (anchorX + 5 * ShapeParameters.SingleHpOffset + 4 * ShapeParameters.SingleHpBoxWidth, anchorY + ShapeParameters.SingleHpOffset);
+                _spriteBatch.Draw(SingleHpPoint, HpBox5, Color.LawnGreen); 
+                goto case 4;
+            case 4:
+                Vector2 HpBox4 = new (anchorX + 4 * ShapeParameters.SingleHpOffset + 3 * ShapeParameters.SingleHpBoxWidth, anchorY + ShapeParameters.SingleHpOffset);
+                _spriteBatch.Draw(SingleHpPoint, HpBox4, Color.LawnGreen);
+                goto case 3;
+            case 3:
+                Vector2 HpBox3 = new (anchorX + 3 * ShapeParameters.SingleHpOffset + 2 * ShapeParameters.SingleHpBoxWidth, anchorY + ShapeParameters.SingleHpOffset);
+                _spriteBatch.Draw(SingleHpPoint, HpBox3, Color.LawnGreen);
+                goto case 2;
+            case 2:
+                Vector2 HpBox2 = new (anchorX + 2 * ShapeParameters.SingleHpOffset + 1 * ShapeParameters.SingleHpBoxWidth, anchorY + ShapeParameters.SingleHpOffset);
+                _spriteBatch.Draw(SingleHpPoint, HpBox2, Color.LawnGreen);
+                goto case 1;
+            case 1:
+                Vector2 HpBox1 = new (anchorX + 1 * ShapeParameters.SingleHpOffset, anchorY + ShapeParameters.SingleHpOffset);
+                _spriteBatch.Draw(SingleHpPoint, HpBox1, Color.LawnGreen);
+                break;            
+            default:
+                break;
+        }
+        
+        
+        //_spriteBatch.Draw(SingleHpPoint, hp, Color.LawnGreen);
         
     }
 
@@ -352,5 +400,64 @@ public class Game1 : Game
         TextBox.Clear();
         Player.NumberOfPlayers = 0;
         ElapsedTime = 0;
+        colCount = 1;
+        rowCount = 1;
+    }
+
+    private void SetNameBoxCoords(Player p)
+    {
+        int YResPerRow = (DeviceResY + (int)ResolutionCorrection.TwoKRes) / Variables.MaxNameBoxRows;
+        int firstBox;
+        if(PlayerObjectList.Count >= 5)
+        {
+            firstBox = DeviceResX / 6;
+        }
+        else
+        {
+            firstBox = DeviceResX / (PlayerObjectList.Count + 1);
+        }
+       
+        p.NameBoxCenterX = firstBox * colCount;
+
+        switch(rowCount)
+        {
+            case 1:
+                p.NameBoxCenterY = YResPerRow;
+                break;
+            case 2:
+                p.NameBoxCenterY = YResPerRow * 2;
+                break;
+            case 3:
+                p.NameBoxCenterY = YResPerRow * 3;
+                break;
+            case 4:
+                p.NameBoxCenterY = YResPerRow * 4;
+                break;
+            case 5:
+                p.NameBoxCenterY = YResPerRow * 5;
+                break;
+            case 6:
+                p.NameBoxCenterY = YResPerRow * 6;
+                break;
+            default:
+                break;
+        }
+
+        colCount++;
+
+        if(colCount >= 6)
+        {
+            colCount = 1;
+            rowCount++;
+        }
+    }
+
+    private void DrawPlayerBoxes()
+    {
+        foreach(var p in PlayerObjectList)
+        {
+            DrawNameBox(p);
+            DrawHpBox(p.NameBoxCenterX, p.NameBoxCenterY, p.PlayerHP);
+        }
     }
 }

@@ -26,6 +26,13 @@ public static class PositionCoords
     public const int FrameOffset = 20;
 }
 
+public static class Variables
+{
+    public const int MaxPlayers = 30;
+    public const int MaxNameBoxColumns = 5;
+    public const int MaxNameBoxRows = MaxPlayers / MaxNameBoxColumns;
+}
+
 public static class DrawLayers
 {
     public const float Identifiers = 0f;
@@ -41,6 +48,11 @@ public enum TimerValues
     ThreeSeconds = 3000,
     FourSeconds = 4000,
     FiveSeconds = 5000,
+}
+
+public enum ResolutionCorrection
+{
+    TwoKRes = -100,
 }
 
 public enum GameStates

@@ -7,10 +7,9 @@ public class Player
 {
     private static int numPlayers = 0;
     //private readonly int ID;
-    private int HP, ID;
+    private int HP, ID, nameBoxCenterX, nameBoxCenterY, nameBoxRow, nameBoxCol;
     private readonly string name;
     private Color playerColor;
-    public int NameBoxCenterX, NameBoxCenterY;
     
     // Constructor
     public Player(string c_playerName, Color c_color, PlayingMode c_mode)
@@ -19,6 +18,8 @@ public class Player
         name = c_playerName;
         playerColor = c_color;
         HP = (int) c_mode;
+        nameBoxCenterX = nameBoxCenterY = 0;
+        nameBoxRow = nameBoxCol = 1;
     }
 
     // Finalizer (Destructor)
@@ -54,5 +55,29 @@ public class Player
     {
         get{ return numPlayers; }
         set{ numPlayers = value; }
+    }
+
+    public int NameBoxCenterX
+    {
+        get{ return nameBoxCenterX; }
+        set{ nameBoxCenterX = value; }
+    }
+
+    public int NameBoxCenterY
+    {
+        get{ return nameBoxCenterY; }
+        set{ nameBoxCenterY = value; }
+    }
+
+    public int NameBoxRow
+    {
+        get{ return nameBoxRow; }
+        set{ nameBoxRow = value; }
+    }
+
+    public int NameBoxCol
+    {
+        get{ return nameBoxCol; }
+        set{ nameBoxCol = value; }
     }
 }
