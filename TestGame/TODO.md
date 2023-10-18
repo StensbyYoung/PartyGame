@@ -2,11 +2,8 @@
 A list of TODOs that I will try to keep up to date.
 
 ## Drawing
-- Add drawbox center positions to Player class
-  - Maybe set as private members and create getters and setters
-  - If implemented, change DrawNameBox and DrawSmallTextBox 
-- Create a function/method to draw HP bar
-  - Figure out colors
+- Figure out colors for HP bar
+- Should lost livs be visible in red?
 
 ## Sounds
 - Add sounds?
