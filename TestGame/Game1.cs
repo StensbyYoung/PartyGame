@@ -29,7 +29,7 @@ public class Game1 : Game
     private List<Player> PlayerObjectList = new ();
 
     private int loserID, hitPlayer, rowCount, colCount;
-    private bool GhostingLock_space, GhostingLock_down, GhostingLock_enter, GameIsPaused;
+    private bool GhostingLock_space, GhostingLock_down, GhostingLock_enter, GameIsPaused, FirstRun;
     private int ElapsedTime;
 
     private const string SDL = "SDL2.dll";
@@ -56,7 +56,7 @@ public class Game1 : Game
         _graphics.ApplyChanges();
 
         GhostingLock_space = GhostingLock_down = GhostingLock_enter = false;
-        GameIsPaused = true;
+        GameIsPaused = FirstRun = true;
         ElapsedTime = 0;
 
         base.Initialize();
@@ -85,6 +85,11 @@ public class Game1 : Game
         switch(State)
         {
             case GameStates.Init:
+                if(FirstRun)
+                {
+                    TestRows(1);
+                    FirstRun = false;
+                }
                 if(Keyboard.GetState().IsKeyDown(Keys.Space))
                 {
                     colCount = 1;
@@ -254,7 +259,8 @@ public class Game1 : Game
         switch(State)
         {
             case GameStates.Init:
-                DrawSmallTextBox(DeviceResX/4, DeviceResY/4, Color.Fuchsia);
+                //DrawSmallTextBox(DeviceResX/4, DeviceResY/4, Color.Fuchsia);
+                DrawPlayerBoxes();
                 break;
             case GameStates.PreGame:
                 _spriteBatch.DrawString(StandardBoldFont, "Players: ", new Vector2(20, 100), Color.Black);
@@ -460,4 +466,19 @@ public class Game1 : Game
             DrawHpBox(p.NameBoxCenterX, p.NameBoxCenterY, p.PlayerHP);
         }
     }
+
+    private void TestRows(int rows)
+    {
+        colCount = 1;
+        rowCount = 1;
+        for(int i = 1; i < (rows * 5) + 1; i++)
+        {
+            PlayerObjectList.Add(new Player(i.ToString(), Color.Black, PlayingMode.Standard));
+        }
+        foreach(var p in PlayerObjectList)
+        {
+            SetNameBoxCoords(p);
+        }
+    }
+
 }
