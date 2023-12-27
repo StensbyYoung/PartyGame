@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -28,8 +29,11 @@ public class Game1 : Game
     private int DeviceResX;
     private List<Player> PlayerObjectList = new ();
 
+    private string ProjectDirectoryPath;
+    private string FilePath_LoserDB;
     private int loserID, hitPlayer, rowCount, colCount;
-    private bool GhostingLock_space, GhostingLock_down, GhostingLock_enter, GameIsPaused, FirstRun;
+    private bool GhostingLock_space, GhostingLock_down, GhostingLock_enter;
+    private bool GameIsPaused, FirstRun, WriteToDataBase;
     private int ElapsedTime;
 
     private const string SDL = "SDL2.dll";
@@ -55,8 +59,11 @@ public class Game1 : Game
         MaximizeWindow();
         _graphics.ApplyChanges();
 
+        ProjectDirectoryPath = Environment.CurrentDirectory;
+        FilePath_LoserDB = Path.Combine(ProjectDirectoryPath, "LoserDataBase.txt");
+
         GhostingLock_space = GhostingLock_down = GhostingLock_enter = false;
-        GameIsPaused = FirstRun = true;
+        GameIsPaused = FirstRun = WriteToDataBase = true;
         ElapsedTime = 0;
 
         base.Initialize();
@@ -130,7 +137,7 @@ public class Game1 : Game
                     ResetGame();
                 }
 
-                if(Keyboard.GetState().IsKeyDown(Keys.Subtract))
+                if(Keyboard.GetState().IsKeyDown(Keys.Subtract) || Keyboard.GetState().IsKeyDown(Keys.Back))
                 {
                     TextBox.Clear();
                     State = GameStates.RemovePlayer;
@@ -139,9 +146,10 @@ public class Game1 : Game
             case GameStates.RemovePlayer:
                 if(Keyboard.GetState().IsKeyDown(Keys.Enter))
                 {
+                    GhostingLock_enter = true;
                     if(int.TryParse(TextBox.ToString(), out int RemoveIdx))
                     {
-                        if(RemoveIdx > PlayerObjectList.Count)
+                        if(RemoveIdx >= PlayerObjectList.Count)
                         {
                             State = GameStates.PreGame;
                             break;
@@ -167,8 +175,9 @@ public class Game1 : Game
                     GhostingLock_enter = true;
                     if(TextBox.ToString() != "")
                     {
-                        AddPlayer(TextBox.ToString());
-                        PlayerObjectList.Add(new Player(TextBox.ToString(), Color.Black, PlayingMode.Standard));
+                        string FilteredText = TextBox.ToString().Replace("\n","").Replace("\r","");
+                        AddPlayer(FilteredText);
+                        PlayerObjectList.Add(new Player(FilteredText, Color.Black, PlayingMode.Standard));
                     }
                     State = GameStates.PreGame;
                 }
@@ -232,7 +241,12 @@ public class Game1 : Game
                 }
                 break;
             case GameStates.EndGame:
-                if(Keyboard.GetState().IsKeyDown(Keys.Home))
+                if(WriteToDataBase)
+                {
+                    WriteToDataBase = false;
+                    DataBase.Write(PlayerObjectList[loserID].PlayerName, FilePath_LoserDB);
+                }
+                if(Keyboard.GetState().IsKeyDown(Keys.Home) || Keyboard.GetState().IsKeyDown(Keys.Space))
                 {
                     ResetGame();
                     State = GameStates.PreGame;
@@ -408,6 +422,7 @@ public class Game1 : Game
         ElapsedTime = 0;
         colCount = 1;
         rowCount = 1;
+        WriteToDataBase = true;
     }
 
     private void SetNameBoxCoords(Player p)
@@ -480,5 +495,4 @@ public class Game1 : Game
             SetNameBoxCoords(p);
         }
     }
-
 }

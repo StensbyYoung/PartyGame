@@ -3,7 +3,7 @@ A list of TODOs that I will try to keep up to date.
 
 ## Drawing
 - Figure out colors for HP bar
-- Should lost livs be visible in red?
+- Should lost lives be visible in red?
 
 ## Sounds
 - Add sounds?
