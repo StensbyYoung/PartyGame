@@ -11,8 +11,8 @@ A list of TODOs that I will try to keep up to date.
 - Get premade or create some simple sounds myself
 
 ## Game Logic
-- Write/read from file
-  - Allows for highscore type data
+- Clickable objects
+  - Related to drawing
 - Import C library for RPI sensehat LED matrix funtionality
   - .def file
   - [Create C dll file](https://stackoverflow.com/questions/13218824/how-to-write-a-dll-file-in-c)
@@ -20,8 +20,6 @@ A list of TODOs that I will try to keep up to date.
   - import dll
   - [P/Invoke](https://learn.microsoft.com/en-us/dotnet/standard/native-interop/pinvoke) 
   - See old tetris game on RPI 
-- Clickable objects
-  - Related to drawing
 
 ## Other
 - Any fun integrations?
